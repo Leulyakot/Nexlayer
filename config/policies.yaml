@@ -1,0 +1,89 @@
+# Nexlayer Policy Configuration
+# This file defines the data protection and compliance policies
+# enforced by the Nexlayer AI Integration Gateway.
+
+policies:
+  # Sensitive data detection policies
+  data_protection:
+    enabled: true
+
+    # PII detection rules
+    pii_detection:
+      enabled: true
+      action: redact  # block | redact | flag
+      patterns:
+        - name: email
+          pattern: '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
+          action: redact
+        - name: ssn
+          pattern: '\b\d{3}-\d{2}-\d{4}\b'
+          action: block
+        - name: phone_us
+          pattern: '\b(?:\+1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b'
+          action: redact
+        - name: credit_card
+          pattern: '\b(?:\d{4}[-\s]?){3}\d{4}\b'
+          action: block
+        - name: ip_address
+          pattern: '\b(?:\d{1,3}\.){3}\d{1,3}\b'
+          action: flag
+
+    # CUI detection rules
+    cui_detection:
+      enabled: true
+      action: block
+      keywords:
+        - "CONTROLLED"
+        - "CUI"
+        - "FOUO"
+        - "FOR OFFICIAL USE ONLY"
+        - "LAW ENFORCEMENT SENSITIVE"
+        - "PROPRIETARY"
+
+  # Model access policies
+  model_access:
+    default_models:
+      - openai
+      - anthropic
+    restricted_models:
+      - local
+
+    # Role-based model access
+    role_permissions:
+      admin:
+        models: ["openai", "anthropic", "local"]
+        max_tokens: 8192
+        rate_limit: 120
+      analyst:
+        models: ["openai", "anthropic"]
+        max_tokens: 4096
+        rate_limit: 60
+      viewer:
+        models: ["openai"]
+        max_tokens: 2048
+        rate_limit: 30
+
+  # Content classification rules
+  classification:
+    enabled: true
+    categories:
+      - name: prompt_injection
+        keywords:
+          - "ignore previous instructions"
+          - "disregard above"
+          - "override system prompt"
+          - "forget your instructions"
+        action: block
+      - name: harmful_content
+        keywords:
+          - "how to hack"
+          - "create malware"
+          - "exploit vulnerability"
+        action: block
+
+  # Compliance settings
+  compliance:
+    require_audit_log: true
+    log_prompt_hash: true
+    log_response_metadata: true
+    data_retention_days: 90

@@ -12,8 +12,17 @@ from jose import JWTError
 from nexlayer.auth.jwt_handler import decode_access_token
 from nexlayer.config.settings import get_settings
 
-bearer_scheme = HTTPBearer(auto_error=False)
-api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
+bearer_scheme = HTTPBearer(
+    auto_error=False,
+    scheme_name="JWT Bearer Token",
+    description="Enter your JWT token (without 'Bearer' prefix). Get a token from POST /v1/auth/token",
+)
+api_key_header = APIKeyHeader(
+    name="X-API-Key",
+    auto_error=False,
+    scheme_name="API Key",
+    description="Enter your API key for authentication",
+)
 
 
 class AuthenticatedUser:

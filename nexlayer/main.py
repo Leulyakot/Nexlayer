@@ -41,13 +41,39 @@ def create_app() -> FastAPI:
     """Application factory."""
     settings = get_settings()
 
+    openapi_tags = [
+        {
+            "name": "ai",
+            "description": "AI gateway operations. Send prompts to AI providers with policy enforcement.",
+        },
+        {
+            "name": "auth",
+            "description": "Authentication endpoints for obtaining tokens (dev/test only).",
+        },
+        {
+            "name": "system",
+            "description": "System health and status endpoints.",
+        },
+    ]
+
     app = FastAPI(
         title="Nexlayer AI Gateway",
-        description="Secure AI Integration Gateway MVP",
+        description=(
+            "Secure AI Integration Gateway MVP.\n\n"
+            "## Authentication\n\n"
+            "Use the **Authorize** button above to authenticate with either:\n"
+            "- **JWT Bearer Token**: Obtain from `POST /v1/auth/token` (dev/test only)\n"
+            "- **API Key**: Use a pre-configured API key in the `X-API-Key` header\n"
+        ),
         version="0.1.0",
         lifespan=lifespan,
         docs_url="/docs" if settings.app_env != "production" else None,
-        redoc_url=None,
+        redoc_url="/redoc" if settings.app_env != "production" else None,
+        openapi_tags=openapi_tags,
+        swagger_ui_parameters={
+            "persistAuthorization": True,
+            "filter": True,
+        },
     )
 
     # Middleware (applied bottom-up: tracing wraps rate-limit)
